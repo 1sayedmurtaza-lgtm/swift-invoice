@@ -63,7 +63,6 @@ export default function Dashboard() {
     if (error) {
       console.error("Failed to update status:", error);
       alert("Could not update status on server. Reverting.");
-      // Revert if database write fails
       setInvoices(prev => 
         prev.map(inv => inv.id === id ? { ...inv, status: currentStatus } : inv)
       );
@@ -133,7 +132,6 @@ export default function Dashboard() {
 
               {/* Action Rows */}
               <div className="flex justify-between items-center border-t border-gray-50 pt-3 mt-1">
-                {/* Status Trigger Toggle */}
                 <button
                   type="button"
                   onClick={() => toggleStatus(invoice.id, invoice.status)}
@@ -146,7 +144,6 @@ export default function Dashboard() {
                   {invoice.status === "paid" ? "✓ Paid" : "⏳ Unpaid"}
                 </button>
 
-                {/* Quick Link Out to Public Receipt view */}
                 <a
                   href={`/invoice/${invoice.id}`}
                   target="_blank"
