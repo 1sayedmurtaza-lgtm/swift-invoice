@@ -38,7 +38,6 @@ export default function InvoiceForm() {
   // 3. Automatic Financial Ledger Recalculations (Tax-Free Logic)
   useEffect(() => {
     const subtotal = lineItems.reduce((acc, item) => acc + (item.quantity * item.unit_price), 0);
-    // Total now maps directly to subtotal without any VAT markup addition
     setTotals({ subtotal, total: subtotal });
   }, [lineItems]);
 
@@ -59,7 +58,7 @@ export default function InvoiceForm() {
     setLineItems(updated);
   };
 
-  // 6. Submit Data Handler
+  // 6. Submit Data Handler with Deep Structural Logs
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientName || lineItems.length === 0 || lineItems[0].description === "") {
@@ -80,7 +79,7 @@ export default function InvoiceForm() {
           user_id: userId,
           client_name: clientName,
           client_phone: clientPhone,
-          tax_rate: 0, // Adjusted schema submission value to 0% tax
+          tax_rate: 0, 
           total: totals.total,
           status: "unpaid",
           currency: currency 
@@ -106,9 +105,25 @@ export default function InvoiceForm() {
 
       triggerWhatsApp(invoice.id);
 
-    } catch (error) {
-      console.error("Database Fault:", error);
-      alert("Failed to write invoice data to Supabase.");
+    } catch (error: any) {
+      // Direct raw object log dump
+      console.error("Database Fault Catch:", error);
+      
+      // Explicit inspection criteria to break open hidden properties
+      if (error && (error.message || error.details || error.hint)) {
+        console.error("Supabase Detailed Diagnostic:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        alert(`Database Fault: ${error.message}\nDetails: ${error.details || "None"}`);
+      } else {
+        // Absolute fallback stringification protocol
+        const fallbackString = JSON.stringify(error, Object.getOwnPropertyNames(error));
+        console.error("Stringified Fault Output:", fallbackString);
+        alert(`Database Structural Fault: ${fallbackString}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -269,8 +284,6 @@ export default function InvoiceForm() {
               : `${CURRENCY_SYMBOLS[currency]}${totals.subtotal.toFixed(2)}`}
           </span>
         </div>
-        
-        {/* VAT / Tax layout completely removed from here */}
         
         <div className="flex justify-between text-sm font-bold text-gray-800 border-t pt-2 mt-2">
           <span>Total Outstanding Due:</span>
